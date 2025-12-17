@@ -1,0 +1,163 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Barber {
+  id          String    @id @default(cuid())
+  name        String
+  specialty   String?
+  description String?
+  imageUrl    String?
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  bookings    Booking[]
+
+  @@map("barbers")
+}
+
+model Service {
+  id          String    @id @default(cuid())
+  name        String
+  description String?
+  duration    Int       // duration in minutes
+  price       Decimal   @db.Decimal(10, 2)
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  bookings    Booking[]
+
+  @@map("services")
+}
+
+model Booking {
+  id           String        @id @default(cuid())
+  customerName String
+  email        String
+  phone        String
+  startTime    DateTime
+  endTime      DateTime
+  duration     Int           // duration in minutes
+  status       BookingStatus @default(PENDING_PAYMENT)
+  notes        String?
+  eventId      String?       // Google Calendar event ID
+  barberId     String
+  serviceId    String
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  barber   Barber    @relation(fields: [barberId], references: [id])
+  service  Service   @relation(fields: [serviceId], references: [id])
+  payments Payment[]
+
+  @@map("bookings")
+}
+
+model Payment {
+  id             String        @id @default(cuid())
+  bookingId      String
+  orderIdGateway String?       // Order ID from payment gateway
+  amount         Decimal       @db.Decimal(10, 2)
+  method         PaymentMethod
+  status         PaymentStatus @default(PENDING)
+  qrCodeUrl      String?       // QRIS QR Code URL
+  qrCodeData     String?       // QRIS QR Code data
+  paidAt         DateTime?
+  expiredAt      DateTime?
+  gatewayData    Json?         // Store gateway response data
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  booking      Booking        @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  paymentProof PaymentProof[]
+
+  @@map("payments")
+}
+
+model Admin {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String   // bcrypt hashed password
+  name      String
+  role      String   @default("admin")
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("admins")
+}
+
+model QRCodeSetting {
+  id            String   @id @default(cuid())
+  qrisImageUrl  String   // URL/path to QRIS image
+  instructions  String?  // Payment instructions
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@map("qr_settings")
+}
+
+model EmailSettings {
+  id                String   @id @default(cuid())
+  adminEmail        String   // Admin Gmail address
+  googleAccessToken String?  // Google OAuth access token
+  googleRefreshToken String? // Google OAuth refresh token
+  calendarId        String?  // Google Calendar ID
+  isActive          Boolean  @default(true)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@map("email_settings")
+}
+
+model PaymentProof {
+  id            String        @id @default(cuid())
+  paymentId     String        
+  proofImageUrl String        // URL/path to payment proof image
+  amount        Decimal       @db.Decimal(10, 2)
+  status        ProofStatus   @default(PENDING)
+  notes         String?       // Admin notes
+  uploadedAt    DateTime      @default(now())
+  reviewedAt    DateTime?
+  reviewedBy    String?       // Admin ID who reviewed
+
+  payment Payment @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+
+  @@map("payment_proofs")
+}
+
+enum BookingStatus {
+  PENDING_PAYMENT
+  CONFIRMED
+  CANCELLED
+  COMPLETED
+}
+
+enum PaymentMethod {
+  BANK_TRANSFER
+  QRIS
+  CASH
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  EXPIRED
+  CANCELLED
+}
+
+enum ProofStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
