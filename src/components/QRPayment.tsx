@@ -68,7 +68,7 @@ export default function QRPayment({ paymentInfo, onPaymentSubmit }: QRPaymentPro
         setQrSetting(data.data)
       }
     } catch (error) {
-      if (error.name !== 'AbortError') {
+      if (error instanceof Error && error.name !== 'AbortError') {
         console.error('Error fetching QR setting:', error)
       }
     } finally {

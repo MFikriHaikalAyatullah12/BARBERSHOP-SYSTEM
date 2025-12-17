@@ -91,7 +91,7 @@ export default function PaymentPage() {
           setError('Booking tidak ditemukan')
         }
       } catch (error) {
-        if (error.name !== 'AbortError') {
+        if (error instanceof Error && error.name !== 'AbortError') {
           setError('Terjadi kesalahan saat mengambil data booking')
           console.error('Error fetching booking:', error)
         }

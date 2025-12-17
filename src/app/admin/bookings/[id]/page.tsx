@@ -98,7 +98,7 @@ export default function BookingDetail() {
         console.error('Failed to fetch booking detail')
       }
     } catch (error) {
-      if (error.name !== 'AbortError') {
+      if (error instanceof Error && error.name !== 'AbortError') {
         console.error('Error fetching booking detail:', error)
       }
     } finally {
