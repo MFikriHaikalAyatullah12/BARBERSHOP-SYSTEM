@@ -9,6 +9,13 @@ export async function GET(
     const resolvedParams = await params
     const bookingId = resolvedParams.id
 
+    if (!bookingId || bookingId.length < 10) {
+      return NextResponse.json(
+        { success: false, error: 'ID booking tidak valid' },
+        { status: 400 }
+      )
+    }
+
     const booking = await prisma.booking.findUnique({
       where: { id: bookingId },
       include: {
@@ -59,7 +66,11 @@ export async function GET(
 
     if (!booking) {
       return NextResponse.json(
-        { error: 'Booking not found' },
+        { 
+          success: false,
+          error: 'Booking tidak ditemukan atau mungkin telah dihapus',
+          message: 'Data booking tidak ditemukan dengan ID tersebut'
+        },
         { status: 404 }
       )
     }
@@ -70,9 +81,25 @@ export async function GET(
     })
 
   } catch (error) {
-    console.error('Error fetching booking detail:', error)
+    console.error('Error fetching booking:', error)
+    
+    if (error instanceof Error) {
+      return NextResponse.json(
+        { 
+          success: false,
+          error: 'Terjadi kesalahan saat mengambil data booking',
+          message: error.message
+        },
+        { status: 500 }
+      )
+    }
+
     return NextResponse.json(
-      { error: 'Failed to fetch booking detail' },
+      { 
+        success: false,
+        error: 'Terjadi kesalahan server',
+        message: 'Internal server error'
+      },
       { status: 500 }
     )
   }

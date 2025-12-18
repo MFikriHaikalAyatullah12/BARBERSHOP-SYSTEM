@@ -120,6 +120,8 @@ export default function BookingForm() {
 
         const data = await response.json()
         
+        console.log('Availability response:', data)
+        
         if (response.ok) {
           setAvailability({
             checking: false,
@@ -134,6 +136,7 @@ export default function BookingForm() {
           })
         }
       } catch (error) {
+        console.error('Error checking availability:', error)
         setAvailability({
           checking: false,
           available: false,
@@ -156,9 +159,23 @@ export default function BookingForm() {
 
   const generateTimeSlots = () => {
     const slots = []
+    const selectedDate = new Date(formData.date + 'T00:00:00')
+    const today = new Date()
+    const isToday = selectedDate.toDateString() === today.toDateString()
+    
     for (let hour = 9; hour < 19; hour++) {
       for (let minute = 0; minute < 60; minute += 30) {
         const time = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`
+        
+        // For today, only show times that are at least 1 hour from now
+        if (isToday) {
+          const slotDateTime = new Date(formData.date + 'T' + time + ':00')
+          const oneHourFromNow = new Date(today.getTime() + (60 * 60 * 1000))
+          if (slotDateTime < oneHourFromNow) {
+            continue
+          }
+        }
+        
         slots.push(time)
       }
     }

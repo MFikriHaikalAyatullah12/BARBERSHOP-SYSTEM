@@ -69,9 +69,10 @@ export function generateTimeSlots(
 export function isValidBookingTime(dateTime: Date): boolean {
   const now = new Date()
   const hour = dateTime.getHours()
+  const dayOfWeek = dateTime.getDay()
   
-  // Check if booking is in the future
-  if (isBefore(dateTime, now)) {
+  // Check if booking is not on Sunday (0 = Sunday)
+  if (dayOfWeek === 0) {
     return false
   }
   
@@ -80,9 +81,20 @@ export function isValidBookingTime(dateTime: Date): boolean {
     return false
   }
   
-  // Check if booking is not on Sunday (0 = Sunday)
-  if (dateTime.getDay() === 0) {
+  // Check if booking is not in the past
+  if (dateTime < now) {
     return false
+  }
+  
+  // For today, check if time is at least 1 hour from now
+  const today = new Date()
+  const isToday = dateTime.toDateString() === today.toDateString()
+  
+  if (isToday) {
+    const oneHourFromNow = new Date(now.getTime() + (60 * 60 * 1000))
+    if (dateTime < oneHourFromNow) {
+      return false
+    }
   }
   
   return true
@@ -103,7 +115,9 @@ export function getBookingDateRange(): { minDate: string; maxDate: string } {
 }
 
 export function parseDateTimeString(dateString: string, timeString: string): Date {
-  return parseISO(`${dateString}T${timeString}:00.000+07:00`)
+  // Create date in local timezone
+  const dateTime = new Date(`${dateString}T${timeString}:00`)
+  return dateTime
 }
 
 export function formatCurrency(amount: number): string {

@@ -88,7 +88,9 @@ export default function PaymentPage() {
             setPaymentSuccess(true)
           }
         } else {
-          setError('Booking tidak ditemukan')
+          const errorMessage = data.error || data.message || 'Booking tidak ditemukan'
+          setError(errorMessage)
+          console.log('Booking fetch failed:', data)
         }
       } catch (error) {
         if (error instanceof Error && error.name !== 'AbortError') {

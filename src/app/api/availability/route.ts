@@ -17,13 +17,53 @@ export async function POST(request: NextRequest) {
 
     // Parse datetime
     const startTime = parseDateTimeString(date, time)
+    
+    console.log('Availability check:', {
+      inputDate: date,
+      inputTime: time,
+      parsedDateTime: startTime.toISOString(),
+      localDateTime: startTime.toString(),
+      dayOfWeek: startTime.getDay(),
+      hour: startTime.getHours(),
+      minutes: startTime.getMinutes()
+    })
 
     // Check if time is valid for booking
-    if (!isValidBookingTime(startTime)) {
+    const isValid = isValidBookingTime(startTime)
+    console.log('Time validity check:', {
+      isValid,
+      startTime: startTime.toString(),
+      now: new Date().toString()
+    })
+    
+    if (!isValid) {
+      const dayOfWeek = startTime.getDay()
+      const hour = startTime.getHours()
+      const now = new Date()
+      
+      let message = 'Waktu tidak valid. '
+      
+      if (dayOfWeek === 0) {
+        message += 'Tidak buka hari Minggu.'
+      } else if (hour < 9 || hour >= 19) {
+        message += 'Pilih jam 09:00-19:00.'
+      } else if (startTime < now) {
+        message += 'Pilih waktu yang akan datang.'
+      } else {
+        message += 'Pilih minimal 1 jam dari sekarang.'
+      }
+      
       return NextResponse.json({
         success: false,
         available: false,
-        message: 'Waktu tidak valid. Pilih hari kerja (Senin-Sabtu) jam 09:00-19:00 dan minimal besok.'
+        message,
+        debug: {
+          startTime: startTime.toString(),
+          now: now.toString(),
+          dayOfWeek,
+          hour,
+          isInPast: startTime < now
+        }
       })
     }
 
