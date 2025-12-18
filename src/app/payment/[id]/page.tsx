@@ -197,16 +197,39 @@ export default function PaymentPage() {
   if (error || !booking) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-            {error || 'Booking tidak ditemukan'}
+        <div className="text-center max-w-md mx-auto p-6">
+          <div className="bg-red-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+            <svg className="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
           </div>
-          <Link 
-            href="/"
-            className="inline-block bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-          >
-            Kembali ke Beranda
-          </Link>
+          <h2 className="text-2xl font-bold text-black mb-4">Booking Tidak Ditemukan</h2>
+          <p className="text-red-600 mb-2 font-medium">
+            {error || 'Data booking tidak ditemukan atau mungkin telah dihapus'}
+          </p>
+          <p className="text-gray-600 text-sm mb-6">
+            ID Booking: <span className="font-mono">{bookingId}</span>
+          </p>
+          <div className="space-y-3">
+            <button
+              onClick={() => window.location.reload()}
+              className="w-full bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              Coba Lagi
+            </button>
+            <Link 
+              href="/booking"
+              className="block bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition-colors text-center"
+            >
+              Buat Booking Baru
+            </Link>
+            <Link 
+              href="/"
+              className="block bg-gray-600 text-white px-6 py-2 rounded-lg hover:bg-gray-700 transition-colors text-center"
+            >
+              Kembali ke Beranda
+            </Link>
+          </div>
         </div>
       </div>
     )
